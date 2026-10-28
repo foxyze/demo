@@ -29,3 +29,14 @@ resource "azurerm_subnet" "endpoints" {
   virtual_network_name = azurerm_virtual_network.main.name
   address_prefixes     = ["10.10.2.0/24"]
 }
+
+resource "azurerm_app_service_virtual_network_swift_connection" "main" {
+  app_service_id = azurerm_linux_web_app.main.id
+  subnet_id      = azurerm_subnet.integration.id
+}
+
+resource "azurerm_mssql_virtual_network_rule" "app" {
+  name      = "allow-app-integration"
+  server_id = data.azurerm_mssql_server.main.id
+  subnet_id = azurerm_subnet.integration.id
+}

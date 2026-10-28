@@ -27,4 +27,9 @@ resource "azurerm_linux_web_app" "main" {
     type  = "SQLAzure"
     value = "Server=tcp:${data.azurerm_mssql_server.main.fully_qualified_domain_name},1433;Database=${data.azurerm_mssql_database.main.name};User ID=${data.azurerm_mssql_server.main.administrator_login};Password=${var.sql_admin_password};Encrypt=True;"
   }
+
+    lifecycle {
+    ignore_changes = [virtual_network_subnet_id]
+  }
+
 }
