@@ -30,3 +30,12 @@ variable "sql_admin_password" {
 variable "allowed_ips" {
   type = list(string)
 }
+variable "enable_custom_domain" {
+  type    = bool
+  default = false
+}
+
+variable "custom_domain" {
+  type    = string
+  default = ""
+}

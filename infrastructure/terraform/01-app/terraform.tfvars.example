@@ -6,3 +6,5 @@ sql_database_name   = "sqldb-example"
 # Inace u OpenBao 
 sql_admin_password = "placeholder"
 allowed_ips = ["0.0.0.0/0"]
+enable_custom_domain = true
+custom_domain        = "placeholde"
