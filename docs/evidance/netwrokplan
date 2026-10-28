@@ -1,0 +1,89 @@
+vahid@fedora:~/demo/infrastructure/terraform/01-app$ terraform plan
+Acquiring state lock. This may take a few moments...
+data.azurerm_resource_group.main: Reading...
+data.azurerm_resource_group.main: Read complete after 1s [id=/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo]
+data.azurerm_service_plan.main: Reading...
+data.azurerm_mssql_server.main: Reading...
+data.azurerm_service_plan.main: Read complete after 1s [id=/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo/providers/Microsoft.Web/serverFarms/asp-demo]
+data.azurerm_mssql_server.main: Read complete after 3s [id=/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo/providers/Microsoft.Sql/servers/sql-demo-c18e119c]
+data.azurerm_mssql_database.main: Reading...
+data.azurerm_mssql_database.main: Read complete after 1s [id=/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo/providers/Microsoft.Sql/servers/sql-demo-c18e119c/databases/sqldb-demo]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # azurerm_subnet.endpoints will be created
+  + resource "azurerm_subnet" "endpoints" {
+      + address_prefixes                              = [
+          + "10.10.2.0/24",
+        ]
+      + default_outbound_access_enabled               = true
+      + id                                            = (known after apply)
+      + name                                          = "snet-endpoints"
+      + network_security_group_id                     = (known after apply)
+      + network_security_group_id_wo                  = (write-only attribute)
+      + private_endpoint_network_policies             = "Disabled"
+      + private_link_service_network_policies_enabled = true
+      + resource_group_name                           = "rg-demo"
+      + route_table_id                                = (known after apply)
+      + route_table_id_wo                             = (write-only attribute)
+      + virtual_network_name                          = "vnet-demo"
+    }
+
+  # azurerm_subnet.integration will be created
+  + resource "azurerm_subnet" "integration" {
+      + address_prefixes                              = [
+          + "10.10.1.0/24",
+        ]
+      + default_outbound_access_enabled               = true
+      + id                                            = (known after apply)
+      + name                                          = "snet-integration"
+      + network_security_group_id                     = (known after apply)
+      + network_security_group_id_wo                  = (write-only attribute)
+      + private_endpoint_network_policies             = "Disabled"
+      + private_link_service_network_policies_enabled = true
+      + resource_group_name                           = "rg-demo"
+      + route_table_id                                = (known after apply)
+      + route_table_id_wo                             = (write-only attribute)
+      + virtual_network_name                          = "vnet-demo"
+
+      + delegation {
+          + name = "web"
+
+          + service_delegation {
+              + actions = [
+                  + "Microsoft.Network/virtualNetworks/subnets/action",
+                ]
+              + name    = "Microsoft.Web/serverFarms"
+            }
+        }
+
+      + service_endpoint {
+          + service = "Microsoft.Sql"
+        }
+    }
+
+  # azurerm_virtual_network.main will be created
+  + resource "azurerm_virtual_network" "main" {
+      + address_space                  = [
+          + "10.10.0.0/16",
+        ]
+      + dns_servers                    = (known after apply)
+      + guid                           = (known after apply)
+      + id                             = (known after apply)
+      + location                       = "swedencentral"
+      + name                           = "vnet-demo"
+      + private_endpoint_vnet_policies = "Disabled"
+      + resource_group_name            = "rg-demo"
+      + subnet                         = (known after apply)
+    }
+
+Plan: 3 to add, 0 to change, 0 to destroy.
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+Releasing state lock. This may take a few moments...
+vahid@fedora:~/demo/infrastructure/terraform/01-app$ 
