@@ -3,7 +3,7 @@
 # Idempotent: safe to re-run. Requires: az login.
 set -euo pipefail
 
-LOCATION="westeurope"
+LOCATION="swedencentral"
 STATE_RG="rg-demo-tfstate"
 STATE_CONTAINER="tfstate"
 APP_NAME="sp-demo-github"
@@ -14,6 +14,8 @@ SUBSCRIPTION_ID=$(az account show --query id -o tsv)
 TENANT_ID=$(az account show --query tenantId -o tsv)
 # Storage account names are global; derive a stable unique suffix from the subscription.
 STATE_SA="stdemotf${SUBSCRIPTION_ID:0:8}"
+
+az provider register --namespace Microsoft.Storage --wait
 
 echo "Resource group: $STATE_RG"
 az group create --name "$STATE_RG" --location "$LOCATION" -o none
