@@ -26,13 +26,12 @@ resource "azurerm_mssql_server" "main" {
 }
 
 resource "azurerm_mssql_database" "main" {
-  name                        = "sqldb-${var.project}"
-  server_id                   = azurerm_mssql_server.main.id
-  sku_name                    = "GP_S_Gen5_1"
-  min_capacity                = 0.5
-  auto_pause_delay_in_minutes = 60
-  max_size_gb                 = 32
+  name        = "sqldb-${var.project}"
+  server_id   = azurerm_mssql_server.main.id
+  sku_name    = "Basic"
+  max_size_gb = 2
 }
+
 
 resource "azurerm_role_assignment" "deployer" {
   scope                = azurerm_resource_group.main.id

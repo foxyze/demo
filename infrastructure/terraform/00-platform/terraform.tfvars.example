@@ -1,3 +1,5 @@
 subscription_id       = "00000000-0000-0000-0000-000000000000"
 deployer_sp_object_id = "00000000-0000-0000-0000-000000000000"
+# Inace u OpenBao 
+sql_admin_password = "placeholder"
 
