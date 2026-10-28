@@ -9,15 +9,28 @@ locals {
 }
 
 resource "azurerm_linux_web_app" "main" {
-  name                = "app-${var.project}-${local.suffix}"
-  resource_group_name = data.azurerm_resource_group.main.name
-  location            = data.azurerm_resource_group.main.location
-  service_plan_id     = data.azurerm_service_plan.main.id
-  https_only          = true
+  name                          = "app-${var.project}-${local.suffix}"
+  resource_group_name           = data.azurerm_resource_group.main.name
+  location                      = data.azurerm_resource_group.main.location
+  service_plan_id               = data.azurerm_service_plan.main.id
+  https_only                    = true
+  public_network_access_enabled = true
 
   site_config {
     health_check_path                 = "/"
     health_check_eviction_time_in_min = 10
+    ip_restriction_default_action     = "Deny"
+    scm_ip_restriction_default_action = "Allow"
+
+    dynamic "ip_restriction" {
+      for_each = var.allowed_ips
+      content {
+        name       = "allow-${ip_restriction.key}"
+        ip_address = ip_restriction.value
+        action     = "Allow"
+        priority   = 100 + ip_restriction.key
+      }
+    }
 
     application_stack {
       dotnet_version = "10.0"
@@ -43,13 +56,26 @@ resource "azurerm_linux_web_app" "main" {
 }
 
 resource "azurerm_linux_web_app_slot" "preprod" {
-  name           = "preprod"
-  app_service_id = azurerm_linux_web_app.main.id
-  https_only     = true
+  name                          = "preprod"
+  app_service_id                = azurerm_linux_web_app.main.id
+  https_only                    = true
+  public_network_access_enabled = true
 
   site_config {
     health_check_path                 = "/"
     health_check_eviction_time_in_min = 10
+    ip_restriction_default_action     = "Deny"
+    scm_ip_restriction_default_action = "Allow"
+
+    dynamic "ip_restriction" {
+      for_each = var.allowed_ips
+      content {
+        name       = "allow-${ip_restriction.key}"
+        ip_address = ip_restriction.value
+        action     = "Allow"
+        priority   = 100 + ip_restriction.key
+      }
+    }
 
     application_stack {
       dotnet_version = "10.0"

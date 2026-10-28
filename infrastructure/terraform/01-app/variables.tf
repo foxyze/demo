@@ -27,3 +27,6 @@ variable "sql_admin_password" {
   type      = string
   sensitive = true
 }
+variable "allowed_ips" {
+  type = list(string)
+}

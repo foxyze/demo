@@ -5,3 +5,4 @@ sql_server_name     = "sql-example"
 sql_database_name   = "sqldb-example"
 # Inace u OpenBao 
 sql_admin_password = "placeholder"
+allowed_ips = ["0.0.0.0/0"]
