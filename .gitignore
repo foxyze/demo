@@ -1,0 +1,20 @@
+# Terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+*.tfvars
+!*.tfvars.example
+crash.log
+*.tfplan
+
+# .NET
+bin/
+obj/
+*.user
+.vs/
+TestResults/
+
+# Environment
+.env
+.env.*
+
