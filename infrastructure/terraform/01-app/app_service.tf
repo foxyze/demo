@@ -2,7 +2,9 @@ locals {
   suffix = substr(var.subscription_id, 0, 8)
 
   app_settings = {
-    ASPNETCORE_ENVIRONMENT = "Production"
+    ASPNETCORE_ENVIRONMENT                     = "Production"
+    APPLICATIONINSIGHTS_CONNECTION_STRING      = azurerm_application_insights.main.connection_string
+    ApplicationInsightsAgent_EXTENSION_VERSION = "~3"
   }
 
   sql_connection_string = "Server=tcp:${data.azurerm_mssql_server.main.fully_qualified_domain_name},1433;Database=${data.azurerm_mssql_database.main.name};User ID=${data.azurerm_mssql_server.main.administrator_login};Password=${var.sql_admin_password};Encrypt=True;"

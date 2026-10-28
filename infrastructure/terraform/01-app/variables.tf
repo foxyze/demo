@@ -39,3 +39,6 @@ variable "custom_domain" {
   type    = string
   default = ""
 }
+variable "alert_email" {
+  type = string
+}
