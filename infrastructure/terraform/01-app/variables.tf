@@ -22,3 +22,8 @@ variable "sql_server_name" {
 variable "sql_database_name" {
   type = string
 }
+
+variable "sql_admin_password" {
+  type      = string
+  sensitive = true
+}
