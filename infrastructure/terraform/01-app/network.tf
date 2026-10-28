@@ -35,6 +35,12 @@ resource "azurerm_app_service_virtual_network_swift_connection" "main" {
   subnet_id      = azurerm_subnet.integration.id
 }
 
+resource "azurerm_app_service_slot_virtual_network_swift_connection" "preprod" {
+  app_service_id = azurerm_linux_web_app.main.id
+  slot_name      = azurerm_linux_web_app_slot.preprod.name
+  subnet_id      = azurerm_subnet.integration.id
+}
+
 resource "azurerm_mssql_virtual_network_rule" "app" {
   name      = "allow-app-integration"
   server_id = data.azurerm_mssql_server.main.id
