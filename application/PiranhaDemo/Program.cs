@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using Piranha;
 using Piranha.AttributeBuilder;
+using Piranha.AspNetCore.Identity.SQLite;
 using Piranha.AspNetCore.Identity.SQLServer;
+using Piranha.Data.EF.SQLite;
 using Piranha.Data.EF.SQLServer;
 using Piranha.Manager.Editor;
 
@@ -26,8 +28,17 @@ builder.AddPiranha(options =>
     options.UseMemoryCache();
 
     var connectionString = builder.Configuration.GetConnectionString("piranha");
-    options.UseEF<SQLServerDb>(db => db.UseSqlServer(connectionString));
-    options.UseIdentityWithSeed<IdentitySQLServerDb>(db => db.UseSqlServer(connectionString));
+    if (builder.Environment.IsEnvironment("Testing"))
+    {
+        // SQLite file keeps tests independent of SQL Server
+        options.UseEF<SQLiteDb>(db => db.UseSqlite(connectionString));
+        options.UseIdentityWithSeed<IdentitySQLiteDb>(db => db.UseSqlite(connectionString));
+    }
+    else
+    {
+        options.UseEF<SQLServerDb>(db => db.UseSqlServer(connectionString));
+        options.UseIdentityWithSeed<IdentitySQLServerDb>(db => db.UseSqlServer(connectionString));
+    }
 
     /**
      * Here you can configure the different permissions
