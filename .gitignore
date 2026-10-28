@@ -17,4 +17,5 @@ TestResults/
 # Environment
 .env
 .env.*
+!.env.example
 
