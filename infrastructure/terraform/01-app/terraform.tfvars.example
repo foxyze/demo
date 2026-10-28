@@ -1,0 +1,5 @@
+subscription_id     = "00000000-0000-0000-0000-000000000000"
+resource_group_name = "rg-example"
+service_plan_name   = "asp-example"
+sql_server_name     = "sql-example"
+sql_database_name   = "sqldb-example"
