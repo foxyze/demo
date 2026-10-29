@@ -7,7 +7,8 @@ LOCATION="swedencentral"
 STATE_RG="rg-demo-tfstate"
 STATE_CONTAINER="tfstate"
 APP_NAME="sp-demo-github"
-GITHUB_REPO="foxyze/demo"
+# GitHub immutable OIDC subject: owner@owner_id/repo@repo_id
+GITHUB_SUBJECT="repo:foxyze@349512986/demo@1437571945"
 GITHUB_ENVIRONMENTS=("preprod" "prod")
 
 SUBSCRIPTION_ID=$(az account show --query id -o tsv)
@@ -54,15 +55,19 @@ fi
 for ENV in "${GITHUB_ENVIRONMENTS[@]}"; do
   CRED_NAME="github-${ENV}"
   echo "Federated credential: $CRED_NAME"
-  if ! az ad app federated-credential show --id "$APP_ID" --federated-credential-id "$CRED_NAME" &>/dev/null; then
-    az ad app federated-credential create --id "$APP_ID" -o none --parameters "{
-      \"name\": \"${CRED_NAME}\",
-      \"issuer\": \"https://token.actions.githubusercontent.com\",
-      \"subject\": \"repo:${GITHUB_REPO}:environment:${ENV}\",
-      \"audiences\": [\"api://AzureADTokenExchange\"]
-    }"
+  PARAMS="{
+    \"name\": \"${CRED_NAME}\",
+    \"issuer\": \"https://token.actions.githubusercontent.com\",
+    \"subject\": \"${GITHUB_SUBJECT}:environment:${ENV}\",
+    \"audiences\": [\"api://AzureADTokenExchange\"]
+  }"
+  if az ad app federated-credential show --id "$APP_ID" --federated-credential-id "$CRED_NAME" &>/dev/null; then
+    az ad app federated-credential update --id "$APP_ID" --federated-credential-id "$CRED_NAME" --parameters "$PARAMS" -o none
+  else
+    az ad app federated-credential create --id "$APP_ID" --parameters "$PARAMS" -o none
   fi
 done
+
 
 echo
 echo "AZURE_CLIENT_ID=$APP_ID"
