@@ -1,0 +1,103 @@
+name: cd
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+      artifact:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: QA tag to deploy (rollback), e.g. QA-1
+        required: true
+
+concurrency:
+  group: cd
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+  actions: read
+
+env:
+  APP: ${{ vars.AZURE_WEBAPP_NAME }}
+  RG: ${{ vars.AZURE_RG }}
+
+jobs:
+  deploy-preprod:
+    runs-on: ubuntu-latest
+    environment:
+      name: preprod
+      url: https://${{ vars.AZURE_WEBAPP_NAME }}-preprod.azurewebsites.net
+    steps:
+      - name: Download artifact from this run
+        if: github.event_name != 'workflow_dispatch'
+        uses: actions/download-artifact@v8
+        with:
+          name: ${{ inputs.artifact }}
+          path: app
+
+      - name: Download artifact from QA run (rollback)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          run_id=$(gh run list -R "$GITHUB_REPOSITORY" -w qa.yml --branch "$TAG" --limit 1 --json databaseId --jq '.[0].databaseId')
+          if [ -z "$run_id" ]; then
+            echo "::error::No QA run found for $TAG"
+            exit 1
+          fi
+          gh run download "$run_id" -R "$GITHUB_REPOSITORY" -n "app-$TAG" -D app
+
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.AZURE_WEBAPP_NAME }}
+          slot-name: preprod
+          package: app
+
+      - name: Smoke test preprod
+        run: curl --fail --silent --show-error --retry 5 --retry-delay 20 --retry-all-errors -o /dev/null "https://$APP-preprod.azurewebsites.net/"
+
+      - name: Route 20% to preprod
+        run: az webapp traffic-routing set -g "$RG" -n "$APP" --distribution preprod=20
+
+  promote-prod:
+    needs: deploy-preprod
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      url: ${{ vars.PROD_URL }}
+    steps:
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Clear traffic routing
+        run: az webapp traffic-routing clear -g "$RG" -n "$APP"
+
+      - name: Swap preprod into production
+        id: swap
+        run: az webapp deployment slot swap -g "$RG" -n "$APP" --slot preprod --target-slot production
+
+      - name: Smoke test production
+        env:
+          PROD_URL: ${{ vars.PROD_URL }}
+        run: curl --fail --silent --show-error --retry 5 --retry-delay 20 --retry-all-errors -o /dev/null "$PROD_URL/"
+
+      - name: Swap back on failure
+        if: failure() && steps.swap.outcome == 'success'
+        run: az webapp deployment slot swap -g "$RG" -n "$APP" --slot preprod --target-slot production
