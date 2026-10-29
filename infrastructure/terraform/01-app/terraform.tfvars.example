@@ -1,0 +1,11 @@
+subscription_id     = "00000000-0000-0000-0000-000000000000"
+resource_group_name = "rg-example"
+service_plan_name   = "asp-example"
+sql_server_name     = "sql-example"
+sql_database_name   = "sqldb-example"
+# Inace u OpenBao 
+sql_admin_password = "placeholder"
+allowed_ips = ["0.0.0.0/0"]
+enable_custom_domain = true
+custom_domain        = "placeholde"
+alert_email          = "ops@example.com"

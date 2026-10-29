@@ -1,0 +1,96 @@
+vahid@fedora:~/demo/infrastructure/terraform/01-app$ terraform plan
+Acquiring state lock. This may take a few moments...
+data.azurerm_resource_group.main: Reading...
+data.azurerm_resource_group.main: Read complete after 0s [id=/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo]
+data.azurerm_mssql_server.main: Reading...
+data.azurerm_service_plan.main: Reading...
+azurerm_virtual_network.main: Refreshing state... [id=/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo/providers/Microsoft.Network/virtualNetworks/vnet-demo]
+azurerm_subnet.endpoints: Refreshing state... [id=/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo/providers/Microsoft.Network/virtualNetworks/vnet-demo/subnets/snet-endpoints]
+azurerm_subnet.integration: Refreshing state... [id=/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo/providers/Microsoft.Network/virtualNetworks/vnet-demo/subnets/snet-integration]
+data.azurerm_service_plan.main: Read complete after 0s [id=/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo/providers/Microsoft.Web/serverFarms/asp-demo]
+data.azurerm_mssql_server.main: Read complete after 1s [id=/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo/providers/Microsoft.Sql/servers/sql-demo-c18e119c]
+data.azurerm_mssql_database.main: Reading...
+data.azurerm_mssql_database.main: Read complete after 1s [id=/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo/providers/Microsoft.Sql/servers/sql-demo-c18e119c/databases/sqldb-demo]
+
+Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
+  + create
+
+Terraform will perform the following actions:
+
+  # azurerm_linux_web_app.main will be created
+  + resource "azurerm_linux_web_app" "main" {
+      + app_settings                                   = {
+          + "ASPNETCORE_ENVIRONMENT" = "Production"
+        }
+      + client_affinity_enabled                        = false
+      + client_certificate_enabled                     = false
+      + client_certificate_mode                        = "Required"
+      + custom_domain_verification_id                  = (sensitive value)
+      + default_hostname                               = (known after apply)
+      + enabled                                        = true
+      + end_to_end_tls_encryption_enabled              = false
+      + ftp_publish_basic_authentication_enabled       = true
+      + hosting_environment_id                         = (known after apply)
+      + https_only                                     = true
+      + id                                             = (known after apply)
+      + key_vault_reference_identity_id                = (known after apply)
+      + kind                                           = (known after apply)
+      + location                                       = "swedencentral"
+      + name                                           = "app-demo-c18e119c"
+      + outbound_ip_address_list                       = (known after apply)
+      + outbound_ip_addresses                          = (known after apply)
+      + possible_outbound_ip_address_list              = (known after apply)
+      + possible_outbound_ip_addresses                 = (known after apply)
+      + public_network_access_enabled                  = true
+      + resource_group_name                            = "rg-demo"
+      + service_plan_id                                = "/subscriptions/c18e119c-4c2f-4b33-bb70-8879ccdd598a/resourceGroups/rg-demo/providers/Microsoft.Web/serverFarms/asp-demo"
+      + site_credential                                = (sensitive value)
+      + virtual_network_backup_restore_enabled         = false
+      + vnet_image_pull_enabled                        = false
+      + webdeploy_publish_basic_authentication_enabled = true
+      + zip_deploy_file                                = (known after apply)
+
+      + connection_string {
+          # At least one attribute in this block is (or was) sensitive,
+          # so its contents will not be displayed.
+        }
+
+      + site_config {
+          + always_on                               = true
+          + container_registry_use_managed_identity = false
+          + default_documents                       = (known after apply)
+          + detailed_error_logging_enabled          = (known after apply)
+          + ftps_state                              = "Disabled"
+          + health_check_eviction_time_in_min       = 10
+          + health_check_path                       = "/"
+          + http2_enabled                           = false
+          + ip_restriction_default_action           = "Allow"
+          + linux_fx_version                        = (known after apply)
+          + load_balancing_mode                     = "LeastRequests"
+          + local_mysql_enabled                     = false
+          + managed_pipeline_mode                   = "Integrated"
+          + minimum_tls_version                     = "1.2"
+          + remote_debugging_enabled                = false
+          + remote_debugging_version                = (known after apply)
+          + scm_ip_restriction_default_action       = "Allow"
+          + scm_minimum_tls_version                 = "1.2"
+          + scm_type                                = (known after apply)
+          + scm_use_main_ip_restriction             = false
+          + use_32_bit_worker                       = true
+          + vnet_route_all_enabled                  = false
+          + websockets_enabled                      = false
+          + worker_count                            = (known after apply)
+
+          + application_stack {
+              + dotnet_version = "10.0"
+            }
+        }
+    }
+
+Plan: 1 to add, 0 to change, 0 to destroy.
+
+──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+Note: You didn't use the -out option to save this plan, so Terraform can't guarantee to take exactly these actions if you run "terraform apply" now.
+Releasing state lock. This may take a few moments...
+vahid@fedora:~/demo/infrastructure/terraform/01-app$ 
