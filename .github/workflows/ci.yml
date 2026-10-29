@@ -126,3 +126,13 @@ jobs:
           scan-ref: infrastructure/terraform
           severity: HIGH,CRITICAL
           exit-code: "1"
+
+  # single required check for branch protection; skipped jobs count as passed
+  ci-gate:
+    if: always()
+    needs: [lint, test, build, gitleaks, semgrep, tf-fmt, tf-validate, trivy]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any job failed
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
