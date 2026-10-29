@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Piranha;
 using Piranha.Extend;
@@ -12,6 +13,7 @@ namespace PiranhaDemo.Controllers;
 /// This controller is only used when the project is first started
 /// and no pages has been added to the database. Feel free to remove it.
 /// </summary>
+[Authorize]
 [ApiExplorerSettings(IgnoreApi = true)]
 public class SetupController : Controller
 {
@@ -22,6 +24,7 @@ public class SetupController : Controller
         _api = api;
     }
 
+    [AllowAnonymous]
     [Route("/")]
     public IActionResult Index()
     {
