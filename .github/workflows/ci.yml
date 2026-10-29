@@ -1,0 +1,128 @@
+name: ci
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.filter.outputs.app }}
+      infra: ${{ steps.filter.outputs.infra }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dorny/paths-filter@v4
+        id: filter
+        with:
+          filters: |
+            app:
+              - 'application/**'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/_test.yml'
+            infra:
+              - 'infrastructure/**'
+              - '.github/workflows/ci.yml'
+
+  # app chain
+  lint:
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet format --verify-no-changes
+        working-directory: application
+
+  test:
+    needs: lint
+    uses: ./.github/workflows/_test.yml
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet publish application/PiranhaDemo/PiranhaDemo.csproj -c Release -o publish
+      - uses: actions/upload-artifact@v7
+        with:
+          name: app
+          path: publish
+
+  gitleaks:
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_ENABLE_COMMENTS: false
+
+  semgrep:
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - run: pipx run semgrep==1.182.0 scan --config p/csharp --error application/
+
+  # infra chain
+  tf-fmt:
+    needs: changes
+    if: needs.changes.outputs.infra == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.17.0
+      - run: terraform fmt -check -recursive infrastructure/terraform
+
+  tf-validate:
+    needs: tf-fmt
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        layer: [00-platform, 01-app]
+    defaults:
+      run:
+        working-directory: infrastructure/terraform/${{ matrix.layer }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: hashicorp/setup-terraform@v4
+        with:
+          terraform_version: 1.17.0
+      - run: terraform init -backend=false
+      - run: terraform validate
+
+  trivy:
+    needs: tf-validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: config
+          scan-ref: infrastructure/terraform
+          severity: HIGH,CRITICAL
+          exit-code: "1"

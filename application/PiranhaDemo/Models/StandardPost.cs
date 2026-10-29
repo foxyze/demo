@@ -4,6 +4,6 @@ using Piranha.Models;
 namespace PiranhaDemo.Models;
 
 [PostType(Title = "Standard post")]
-public class StandardPost  : Post<StandardPost>
+public class StandardPost : Post<StandardPost>
 {
 }
